@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const db = [
+export const db = [
     {
         username: "sarthak",
         email: "sarthak@something.com",
@@ -11,7 +11,7 @@ const db = [
     },
 ];
 
-const mainSession = {};
+export const mainSession = {};
 
 const createSession = (req, res, next) => {
     const { email, password } = req.body;
@@ -58,11 +58,30 @@ const createSession = (req, res, next) => {
 };
 
 const deleteSession = (req, res, next) => {
-    //
+    console.log("delete", req.user);
+    if (!req?.user) {
+        return res.send("Nothing to logout");
+    }
+    res.cookie("accessToken", "", {
+        maxAge: 0,
+        httpOnly: true,
+    });
+
+    res.cookie("refreshToken", "", {
+        maxAge: 0,
+        httpOnly: true,
+    });
+
+    mainSession[req.user.sessionId].valid = false;
+
+    return res.send(mainSession[req.user.sessionId]);
 };
 
 const getSession = (req, res, next) => {
-    // return res.send()
+    if (!req?.user) {
+        return res.send("Not Logged In");
+    }
+    return res.send(req.user);
 };
 
 export default { createSession, deleteSession, getSession };
